@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!--
+  PoultSynapse Lab page  (the mad-scientist, Van Gogh-inspired lab)
+  ------------------------------------------------------------------
+  Colours, fonts, sizes: ALL in poultsynapse.css (see the :root block).
+  Layout:  header -> Dr. Synapse strip -> left panel (inputs) -> right panel (results) -> footer
+  Logic:   every calculation lives in poultsynapse.js (nothing is computed here)
+  Style:   poultsynapse.css
+  The nutrient sliders are NOT written by hand: poultsynapse.js builds them
+  from its NUTRIENTS list and drops them into the two empty containers
+  marked "filled by poultsynapse.js" below.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoultSynapse — The Mad Lab for Broiler Growth Prediction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,wght@0,600;0,800;1,600&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="poultsynapse.css">
+    <link rel="icon" type="image/png" href="../assets/nutrify-logo.png">
+</head>
+<body class="poultsynapse-theme">
+
+    <!-- LAB NAVIGATION HEADER -->
+    <header class="lab-navbar">
+        <div class="lab-container nav-flex">
+            <div class="lab-brand">
+                <a href="../index.html" class="back-link">&larr; Back to Nutrify</a>
+                <div class="lab-title-group">
+                    <span class="pulse-indicator" aria-hidden="true"></span>
+                    <span class="lab-badge">MAD LAB &middot; v2.4</span>
+                    <h1 class="lab-logo-text">Poult<span class="accent-text">Synapse</span> <span class="sub-text">/ the wild growth-prediction laboratory</span></h1>
+                </div>
+            </div>
+
+            <div class="lab-nav-actions">
+                <a href="../poultai/index.html" class="back-link">PoultAI Lab &rarr;</a>
+                <span class="model-status"><span class="dot"></span> Model Ready: Cobb 500 Synapse Predictor</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- DR. SYNAPSE: the mascot whose speech bubble (#doctorNote) is rewritten by poultsynapse.js -->
+    <section class="lab-container doctor-strip" aria-live="polite">
+        <div class="mascot"><svg viewBox="0 0 120 124" class="mascot-svg" role="img" aria-label="Dr. Synapse, a mad-scientist chicken with goggles and wild hair">
+  <g stroke="#2b2a4a" stroke-width="3.2" fill="none" stroke-linecap="round">
+    <path d="M42 36 C30 22 24 16 12 14"/><path d="M50 30 C46 16 40 8 30 2"/><path d="M60 28 C60 14 62 8 66 0"/>
+    <path d="M70 30 C76 16 84 10 94 6"/><path d="M78 38 C90 26 100 24 110 26"/><path d="M36 46 C24 42 14 44 6 52"/>
+  </g>
+  <path d="M52 30 C54 18 62 18 63 28 C66 20 74 22 71 32 Z" fill="#d6452d" stroke="#2b2a4a" stroke-width="2.5"/>
+  <circle cx="60" cy="64" r="34" fill="#fffaf0" stroke="#2b2a4a" stroke-width="3.5"/>
+  <path d="M26 112 L44 92 L60 108 L76 92 L94 112 Z" fill="#fff" stroke="#2b2a4a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M60 108 L52 124 L68 124 Z" fill="#2a4a9a" stroke="#2b2a4a" stroke-width="2.5"/>
+  <path d="M26 58 Q60 50 94 58" stroke="#2b2a4a" stroke-width="5" fill="none"/>
+  <circle cx="46" cy="60" r="13" fill="#f2b922" stroke="#2b2a4a" stroke-width="3.5"/>
+  <circle cx="76" cy="60" r="13" fill="#f2b922" stroke="#2b2a4a" stroke-width="3.5"/>
+  <circle cx="46" cy="60" r="4.5" fill="#2b2a4a"/><circle cx="78" cy="58" r="6" fill="#2b2a4a"/>
+  <circle cx="47.5" cy="58.5" r="1.3" fill="#fff"/><circle cx="79.5" cy="56" r="1.8" fill="#fff"/>
+  <path d="M52 76 L68 76 L60 88 Z" fill="#e8891a" stroke="#2b2a4a" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M56 90 C58 98 66 98 64 90" fill="#d6452d" stroke="#2b2a4a" stroke-width="2"/>
+</svg></div>
+        <div class="speech-bubble">
+            <span class="scribble-label">Dr. Synapse mutters:</span>
+            <p id="doctorNote">Eureka! Right on the Cobb 500 curve...</p>
+        </div>
+    </section>
+
+    <!-- LAB STUDIO CONTENT -->
+    <main class="lab-main">
+        <div class="lab-container">
+            
+            <div class="lab-grid">
+                
+                <!-- LEFT PANEL: PARAMS & CONTROLS (flock setup + every Cobb nutrient factor) -->
+                <section class="lab-panel input-panel">
+                    <div class="panel-header">
+                        <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Nutrient Rations Input</h2>
+                        <span class="panel-tag">LIVE PARAMS</span>
+                    </div>
+
+                    <form id="labSimulationForm" onsubmit="event.preventDefault(); updateLabSimulation();">
+
+                        <!-- FLOCK SETUP: age, sex, market and cereal choose which Cobb tables are used -->
+                        <div class="param-group">
+                            <label for="birdAge">
+                                <span>Bird Age (Days)</span>
+                                <span class="val-display" id="ageValDisplay">21 Days</span>
+                            </label>
+                            <span class="scribble">&nearrow; drag me! older bird = bigger bird</span>
+                            <input type="range" id="birdAge" min="1" max="56" value="21" class="lab-slider" oninput="updateLabSimulation()">
+                        </div>
+
+                        <div class="param-group">
+                            <label for="birdSex"><span>Bird Sex (Cobb weight table)</span></label>
+                            <select id="birdSex" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="hatched" selected>As Hatched (mixed)</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="param-group">
+                            <label for="feedMarket"><span>Market (Cobb feeding programme)</span></label>
+                            <select id="feedMarket" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="medium" selected>Medium / Large Birds (5 phases)</option>
+                                <option value="small">Small Birds (4 phases)</option>
+                            </select>
+                        </div>
+
+                        <div class="param-group">
+                            <label for="dietGrain"><span>Diet Cereal Base (sets biotin target)</span></label>
+                            <select id="dietGrain" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="maize" selected>Maize diet</option>
+                                <option value="wheat">Wheat diet</option>
+                            </select>
+                        </div>
+
+                        <!-- CORE NUTRIENTS: energy, protein, lysine, methionine + cystine (filled by poultsynapse.js) -->
+                        <div class="param-section-title">Core Energy & Protein Rations</div>
+                        <span class="scribble">lysine is the conductor of the amino-acid orchestra!</span>
+                        <div id="coreNutrientSliders"></div>
+
+                        <!-- EXTENDED NUTRIENTS: other amino acids, minerals, fatty acid, vitamins, trace
+                             elements - one collapsible section each (filled by poultsynapse.js) -->
+                        <div id="extendedNutrientSliders"></div>
+
+                        <!-- ENVIRONMENT (not a Cobb nutrient; kept from the original model) -->
+                        <div class="param-section-title">Environmental Factors</div>
+
+                        <div class="param-group">
+                            <label for="temperature">
+                                <span>Ambient Temperature (°C)</span>
+                                <span class="val-display" id="tempValDisplay">22°C</span>
+                            </label>
+                            <input type="range" id="temperature" min="18" max="38" value="22" class="lab-slider" oninput="updateLabSimulation()">
+                        </div>
+
+                        <div class="lab-btn-group">
+                            <button type="button" class="lab-btn lab-btn-sec" onclick="resetLabParams()">Reset Standard Rations</button>
+                            <button type="button" class="lab-btn lab-btn-accent" onclick="loadLowProteinScenario()">Deficient Scenario (cackle!)</button>
+                        </div>
+                    </form>
+                </section>
+
+
+                <!-- RIGHT PANEL: DYNAMIC VISUALIZATION & GRAPH ENGINE -->
+                <section class="lab-panel display-panel">
+                    
+                    <!-- TOP METRICS HEADER: predicted weight, Cobb target, difference, feed conversion -->
+                    <div class="metrics-row">
+                        <div class="metric-box highlight-box">
+                            <div class="metric-tag">PREDICTED WEIGHT</div>
+                            <div class="metric-num" id="labPredictedWeight">950 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labAgeTag">Day 21 Growth</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">COBB 500 TARGET</div>
+                            <div class="metric-num" id="labTargetWeight">950 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labTargetSub">Breeder Standard</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">VARIANCE DEV</div>
+                            <div class="metric-num" id="labVarianceNum">0 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labVariancePercent">0.0% Standard</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">EST. FCR RATIO</div>
+                            <div class="metric-num" id="labFCRNum">1.42</div>
+                            <div class="metric-sub" id="labFCRSub">Feed Conversion Efficiency</div>
+                        </div>
+                    </div>
+
+
+                    <!-- DYNAMIC REAL CHICKEN + GRAPH DUAL LAB STAGE -->
+                    <div class="lab-stage-container">
+                        
+                        <!-- CHICKEN VISUALIZER BOX -->
+                        <div class="chicken-lab-box">
+                            <div class="box-header">
+                                <span class="live-dot"></span> LIVE PHENOTYPE SIMULATOR
+                            </div>
+
+                            <!-- DYNAMIC CHICKEN STAGE -->
+                            <div class="chicken-viewport" id="chickenViewport">
+                                
+                                <!-- Rendered Chicken SVG Graphic with dynamic scale, body mass index, feather texture & pulse effect -->
+                                <div class="chicken-avatar-wrapper" id="chickenAvatarWrapper">
+                                    <!-- viewBox is cropped tightly around the bird so it fills its box and sits exactly in the centre -->
+                                    <svg id="chickenSvg" viewBox="21 32 160 160" class="chicken-svg">
+                                        <defs>
+                                            <radialGradient id="bodyGrad" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#ffffff"/>
+                                                <stop offset="70%" stop-color="#f3f4f1"/>
+                                                <stop offset="100%" stop-color="#d9e0db"/>
+                                            </radialGradient>
+                                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000" flood-opacity="0.3"/>
+                                            </filter>
+                                        </defs>
+
+                                        <!-- Floor Shadow -->
+                                        <ellipse id="chickShadow" cx="100" cy="178" rx="45" ry="10" fill="rgba(43,42,74,0.18)" filter="blur(4px)"/>
+
+                                        <!-- Feet -->
+                                        <g id="chickFeet" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round">
+                                            <line x1="85" y1="150" x2="75" y2="175"/>
+                                            <line x1="75" y1="175" x2="65" y2="178"/>
+                                            <line x1="75" y1="175" x2="75" y2="181"/>
+                                            <line x1="75" y1="175" x2="85" y2="178"/>
+
+                                            <line x1="115" y1="150" x2="125" y2="175"/>
+                                            <line x1="125" y1="175" x2="115" y2="178"/>
+                                            <line x1="125" y1="175" x2="125" y2="181"/>
+                                            <line x1="125" y1="175" x2="135" y2="178"/>
+                                        </g>
+
+                                        <!-- Main Body Mass (dynamically scaled) -->
+                                        <path id="chickBody" d="M 60,110 C 50,70 100,50 140,80 C 160,100 150,150 100,150 C 65,150 55,130 60,110 Z" fill="url(#bodyGrad)" filter="url(#shadow)" stroke="#10b981" stroke-width="1.5"/>
+
+                                        <!-- Wing -->
+                                        <path id="chickWing" d="M 80,105 C 70,120 95,140 120,125 C 125,110 105,95 80,105 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1"/>
+
+                                        <!-- Tail Feathers -->
+                                        <path id="chickTail" d="M 50,100 C 30,80 35,110 55,120 Z" fill="#d1d5db"/>
+
+                                        <!-- Head & Neck -->
+                                        <circle id="chickHead" cx="138" cy="72" r="22" fill="url(#bodyGrad)"/>
+
+                                        <!-- Eye -->
+                                        <circle cx="146" cy="67" r="3.5" fill="#111827"/>
+                                        <circle cx="147.5" cy="65.5" r="1" fill="#ffffff"/>
+
+                                        <!-- Comb -->
+                                        <path id="chickComb" d="M 130,52 C 132,42 140,42 142,50 C 145,43 150,45 148,53 C 152,48 156,52 150,58 Z" fill="#ef4444"/>
+
+                                        <!-- Beak -->
+                                        <polygon points="158,70 172,76 158,82" fill="#f59e0b"/>
+
+                                        <!-- Wattle -->
+                                        <path id="chickWattle" d="M 152,82 C 158,86 154,94 148,90 Z" fill="#ef4444"/>
+                                    </svg>
+
+                                </div>
+
+                                <!-- Live Morph Status Text: sits at the bottom of the viewport so it never scales with the bird -->
+                                <div class="morph-badge" id="morphBadge">Optimal Broiler Growth</div>
+
+                                <div class="chicken-stats-overlay">
+                                    <div class="stat-tag">Relative Mass: <span id="relativeMassPercent">100%</span></div>
+                                    <div class="stat-tag">Physical Scale: <span id="physicalScaleTag">1.00x</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GRAPH ENGINE BOX -->
+                        <div class="graph-lab-box">
+                            <div class="box-header">
+                                <span>GROWTH TRAJECTORY PREDICTION (DAYS 1-56)</span>
+                                <span class="live-dot green"></span>
+                            </div>
+
+                            <div class="chart-stage" id="labChartStage">
+                                <!-- SVG Chart rendered dynamically by JS -->
+                            </div>
+
+                            <div class="chart-legend-lab">
+                                <div class="leg-item"><span class="leg-line cur"></span> Predicted Curve</div>
+                                <div class="leg-item"><span class="leg-line ref"></span> Cobb 500 Standard</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- COMPARISON TABLE SECTION: every nutrient vs its Cobb target -->
+                    <div class="lab-card table-card">
+                        <h3>Ration Dynamics Matrix</h3>
+                        <!-- Feeding phase, feed form and most limiting nutrient (filled by poultsynapse.js) -->
+                        <p class="phase-info" id="labPhaseInfo"></p>
+                        <div class="table-responsive matrix-scroll">
+                            <table class="lab-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nutrient Factor</th>
+                                        <th>Active Ration</th>
+                                        <th>Cobb 500 Baseline Target</th>
+                                        <th>Deviation</th>
+                                        <th>Status Indicator</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="labMatrixBody">
+                                    <!-- Rows (one per Cobb nutrient factor) are written by updateMatrixTable() in poultsynapse.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    
+                    <!-- REAL-LIFE COMMERCIAL PRODUCTION FACTORS (static information; sits inside the table card exactly as in the original layout) -->
+                    <div class="real-life-section">
+                        <h3>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Real-Life Commercial Production & Environmental Factors
+                        </h3>
+                        <p class="real-life-intro">
+                            To scale PoultSynapse predictions from a single-bird virtual laboratory model to commercial enterprise poultry housing, the following real-world environmental and management variables must be integrated:
+                        </p>
+
+                        <div class="real-life-grid">
+                            <div class="real-life-card">
+                                <h4>1. Stocking Density (Birds/m²)</h4>
+                                <p>Commercial broiler density typically ranges from 12 to 18 birds/m² (or up to 33–39 kg/m²). High stocking densities without proportional ventilation adjustments elevate ammonia levels, induce heat stress, and reduce final body weight gains.</p>
+                            </div>
+
+                            <div class="real-life-card">
+                                <h4>2. Environmental Ventilation</h4>
+                                <p>Minimum and tunnel ventilation rates (measured in m³/h per kg of live weight) maintain oxygen levels, remove moisture, and regulate carbon dioxide and humidity, directly preventing ascites and wet litter syndromes.</p>
+                            </div>
+
+                            <div class="real-life-card">
+                                <h4>3. Feeder & Drinker Space</h4>
+                                <p>Adequate linear feeder space (pan feeders: 45–80 birds/pan) and nipple drinkers (8–10 birds/nipple) ensure uniform flock access to feed and water, preventing social competition and lower uniformity coefficients.</p>
+                            </div>
+
+                            <div class="real-life-card">
+                                <h4>4. Biosecurity & Litter Quality</h4>
+                                <p>Strict biosecurity barriers and litter moisture management (target moisture 20–25%) mitigate coccidiosis and pododermatitis (footpad dermatitis), safeguarding overall feed conversion efficiency (FCR).</p>
+                            </div>
+                        </div>
+                    </div>
+                    </div><!-- /.table-card -->
+
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- LIVE CHIP: on phones and tablets the results are far below the sliders, so this
+         small bar stays at the bottom of the screen and shows the live result (see updateLiveChip in the JS) -->
+    <a href="#labPredictedWeight" class="live-chip" id="liveChip" aria-label="Jump to results">
+        <span>Predicted <strong id="chipWeight">-</strong></span>
+        <span id="chipVariance">-</span>
+        <span class="chip-go">results &darr;</span>
+    </a>
+
+    <footer class="syn-footer">
+        <div class="lab-container">
+            <p class="scribble big">Brewed with curiosity (and a little madness) by the NUTRIFY students.</p>
+            <p class="foot-note">PoultSynapse is a research simulation. Reference values come from the Cobb 500 Performance &amp; Nutrition Supplement (2022); response curves are modelling assumptions, not trial data.</p>
+            <p><a href="../index.html">Nutrify home</a> &middot; <a href="../index.html#papers">Papers</a> &middot; <a href="../index.html#tips">Tips</a></p>
+        </div>
+    </footer>
+
+    <script src="poultsynapse.js"></script>
+</body>
+</html>

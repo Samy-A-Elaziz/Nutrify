@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoultSynapse — Bio-Neural Broiler Growth Prediction Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="poultsynapse.css">
+    <link rel="icon" type="image/png" href="../assets/nutrify-logo.png">
+</head>
+<body class="poultsynapse-theme">
+
+    <!-- NEURAL CANVAS BACKGROUND -->
+    <canvas id="synapseCanvas" class="synapse-canvas"></canvas>
+    <div class="glow-backdrop"></div>
+
+    <!-- LAB NAVIGATION HEADER -->
+    <header class="lab-navbar">
+        <div class="lab-container nav-flex">
+            <div class="lab-brand">
+                <a href="../index.html" class="back-link">&larr; Back to Nutrify</a>
+                <div class="lab-title-group">
+                    <span class="pulse-indicator" aria-hidden="true"></span>
+                    <span class="lab-badge">NEURAL CORE &middot; v3.0</span>
+                    <h1 class="lab-logo-text">Poult<span class="accent-text">Synapse</span> <span class="sub-text">/ neural growth prediction engine</span></h1>
+                </div>
+            </div>
+
+            <div class="lab-nav-actions">
+                <a href="../poultai/index.html" class="back-link">PoultAI Lab &rarr;</a>
+                <span class="model-status"><span class="dot"></span> Neural Model: Cobb 500 Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- DR. SYNAPSE: NEURAL INTERFACE MONOLOGUE -->
+    <section class="lab-container doctor-strip" aria-live="polite">
+        <div class="mascot">
+            <svg viewBox="0 0 120 124" class="mascot-svg" role="img" aria-label="Dr. Synapse Bio-Neural Visualizer">
+                <defs>
+                    <linearGradient id="synPulse" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00f2fe"/>
+                        <stop offset="100%" stop-color="#7000ff"/>
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <circle cx="60" cy="62" r="50" fill="rgba(10, 16, 32, 0.8)" stroke="#00f2fe" stroke-width="2.5" filter="url(#glow)"/>
+                <path d="M30 62 Q 45 35 60 62 T 90 62" fill="none" stroke="#7000ff" stroke-width="3" filter="url(#glow)"/>
+                <circle cx="60" cy="62" r="14" fill="url(#synPulse)" filter="url(#glow)"/>
+                <circle cx="60" cy="62" r="6" fill="#ffffff"/>
+                <!-- Neural Axons -->
+                <line x1="60" y1="12" x2="60" y2="28" stroke="#00f2fe" stroke-width="2"/>
+                <line x1="60" y1="96" x2="60" y2="112" stroke="#00f2fe" stroke-width="2"/>
+                <line x1="12" y1="62" x2="28" y2="62" stroke="#00f2fe" stroke-width="2"/>
+                <line x1="96" y1="62" x2="112" y2="62" stroke="#00f2fe" stroke-width="2"/>
+            </svg>
+        </div>
+        <div class="speech-bubble">
+            <span class="scribble-label">SYNAPTIC COMMUNICATOR // DR. SYNAPSE:</span>
+            <p id="doctorNote">Neural network calibrating... Right on the Cobb 500 growth pathway.</p>
+        </div>
+    </section>
+
+    <!-- LAB STUDIO CONTENT -->
+    <main class="lab-main">
+        <div class="lab-container">
+            
+            <div class="lab-grid">
+                
+                <!-- LEFT PANEL: PARAMS & CONTROLS -->
+                <section class="lab-panel input-panel">
+                    <div class="panel-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
+                            Bio-Input Signal Array
+                        </h2>
+                        <span class="panel-tag">LIVE SYNAPSE</span>
+                    </div>
+
+                    <form id="labSimulationForm" onsubmit="event.preventDefault(); updateLabSimulation();">
+
+                        <!-- FLOCK SETUP -->
+                        <div class="param-group">
+                            <label for="birdAge">
+                                <span>Bird Age (Days)</span>
+                                <span class="val-display" id="ageValDisplay">21 Days</span>
+                            </label>
+                            <span class="scribble">Adjust temporal node &rarr; scale bird mass</span>
+                            <input type="range" id="birdAge" min="1" max="56" value="21" class="lab-slider" oninput="updateLabSimulation()">
+                        </div>
+
+                        <div class="param-group">
+                            <label for="birdSex"><span>Bird Sex (Cobb weight matrix)</span></label>
+                            <select id="birdSex" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="hatched" selected>As Hatched (mixed)</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="param-group">
+                            <label for="feedMarket"><span>Market (Cobb feeding programme)</span></label>
+                            <select id="feedMarket" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="medium" selected>Medium / Large Birds (5 phases)</option>
+                                <option value="small">Small Birds (4 phases)</option>
+                            </select>
+                        </div>
+
+                        <div class="param-group">
+                            <label for="dietGrain"><span>Diet Cereal Base (biotin vector)</span></label>
+                            <select id="dietGrain" class="lab-select" onchange="updateLabSimulation()">
+                                <option value="maize" selected>Maize diet</option>
+                                <option value="wheat">Wheat diet</option>
+                            </select>
+                        </div>
+
+                        <!-- CORE NUTRIENTS -->
+                        <div class="param-section-title">Core Metabolic Drivers</div>
+                        <span class="scribble">Lysine acts as the central synaptic conductor!</span>
+                        <div id="coreNutrientSliders"></div>
+
+                        <!-- EXTENDED NUTRIENTS -->
+                        <div id="extendedNutrientSliders"></div>
+
+                        <!-- ENVIRONMENT -->
+                        <div class="param-section-title">Environmental Signals</div>
+
+                        <div class="param-group">
+                            <label for="temperature">
+                                <span>Ambient Temperature (°C)</span>
+                                <span class="val-display" id="tempValDisplay">22°C</span>
+                            </label>
+                            <input type="range" id="temperature" min="18" max="38" value="22" class="lab-slider" oninput="updateLabSimulation()">
+                        </div>
+
+                        <div class="lab-btn-group">
+                            <button type="button" class="lab-btn lab-btn-sec" onclick="resetLabParams()">Reset Standard Rations</button>
+                            <button type="button" class="lab-btn lab-btn-accent" onclick="loadLowProteinScenario()">Deficient State</button>
+                        </div>
+                    </form>
+                </section>
+
+
+                <!-- RIGHT PANEL: DYNAMIC VISUALIZATION & GRAPH ENGINE -->
+                <section class="lab-panel display-panel">
+                    
+                    <!-- TOP METRICS HEADER -->
+                    <div class="metrics-row">
+                        <div class="metric-box highlight-box">
+                            <div class="metric-tag">PREDICTED WEIGHT</div>
+                            <div class="metric-num" id="labPredictedWeight">950 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labAgeTag">Day 21 Growth</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">COBB 500 TARGET</div>
+                            <div class="metric-num" id="labTargetWeight">950 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labTargetSub">Breeder Standard</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">VARIANCE DEV</div>
+                            <div class="metric-num" id="labVarianceNum">0 <span class="unit">g</span></div>
+                            <div class="metric-sub" id="labVariancePercent">0.0% Standard</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-tag">EST. FCR RATIO</div>
+                            <div class="metric-num" id="labFCRNum">1.42</div>
+                            <div class="metric-sub" id="labFCRSub">Feed Conversion Efficiency</div>
+                        </div>
+                    </div>
+
+
+                    <!-- DYNAMIC REAL CHICKEN + GRAPH DUAL LAB STAGE -->
+                    <div class="lab-stage-container">
+                        
+                        <!-- CHICKEN VISUALIZER BOX -->
+                        <div class="chicken-lab-box">
+                            <div class="box-header">
+                                <span><span class="live-dot"></span> LIVE PHENOTYPE SYNAPSE</span>
+                            </div>
+
+                            <div class="chicken-viewport" id="chickenViewport">
+                                
+                                <div class="chicken-avatar-wrapper" id="chickenAvatarWrapper">
+                                    <svg id="chickenSvg" viewBox="21 32 160 160" class="chicken-svg">
+                                        <defs>
+                                            <radialGradient id="bodyGrad" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#1e293b"/>
+                                                <stop offset="70%" stop-color="#0f172a"/>
+                                                <stop offset="100%" stop-color="#020617"/>
+                                            </radialGradient>
+                                            <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="4" result="blur"/>
+                                                <feMerge>
+                                                    <feMergeNode in="blur"/>
+                                                    <feMergeNode in="SourceGraphic"/>
+                                                </feMerge>
+                                            </filter>
+                                        </defs>
+
+                                        <!-- Shadow -->
+                                        <ellipse id="chickShadow" cx="100" cy="178" rx="45" ry="10" fill="rgba(0, 242, 254, 0.15)" filter="blur(6px)"/>
+
+                                        <!-- Feet -->
+                                        <g id="chickFeet" stroke="#00f2fe" stroke-width="3" stroke-linecap="round" filter="url(#neonGlow)">
+                                            <line x1="85" y1="150" x2="75" y2="175"/>
+                                            <line x1="75" y1="175" x2="65" y2="178"/>
+                                            <line x1="75" y1="175" x2="75" y2="181"/>
+                                            <line x1="75" y1="175" x2="85" y2="178"/>
+
+                                            <line x1="115" y1="150" x2="125" y2="175"/>
+                                            <line x1="125" y1="175" x2="115" y2="178"/>
+                                            <line x1="125" y1="175" x2="125" y2="181"/>
+                                            <line x1="125" y1="175" x2="135" y2="178"/>
+                                        </g>
+
+                                        <!-- Body -->
+                                        <path id="chickBody" d="M 60,110 C 50,70 100,50 140,80 C 160,100 150,150 100,150 C 65,150 55,130 60,110 Z" fill="url(#bodyGrad)" stroke="#00f2fe" stroke-width="2.5" filter="url(#neonGlow)"/>
+
+                                        <!-- Wing Axon lines -->
+                                        <path id="chickWing" d="M 80,105 C 70,120 95,140 120,125 C 125,110 105,95 80,105 Z" fill="rgba(112, 0, 255, 0.2)" stroke="#7000ff" stroke-width="1.5"/>
+
+                                        <!-- Tail Feathers -->
+                                        <path id="chickTail" d="M 50,100 C 30,80 35,110 55,120 Z" fill="rgba(0, 242, 254, 0.15)" stroke="#00f2fe" stroke-width="1"/>
+
+                                        <!-- Head & Neck -->
+                                        <circle id="chickHead" cx="138" cy="72" r="22" fill="url(#bodyGrad)" stroke="#00f2fe" stroke-width="2" filter="url(#neonGlow)"/>
+
+                                        <!-- Eye Synapse -->
+                                        <circle cx="146" cy="67" r="4" fill="#00f2fe" filter="url(#neonGlow)"/>
+                                        <circle cx="146" cy="67" r="1.5" fill="#ffffff"/>
+
+                                        <!-- Comb -->
+                                        <path id="chickComb" d="M 130,52 C 132,42 140,42 142,50 C 145,43 150,45 148,53 C 152,48 156,52 150,58 Z" fill="#ff007f" filter="url(#neonGlow)"/>
+
+                                        <!-- Beak -->
+                                        <polygon points="158,70 172,76 158,82" fill="#38bdf8"/>
+
+                                        <!-- Wattle -->
+                                        <path id="chickWattle" d="M 152,82 C 158,86 154,94 148,90 Z" fill="#ff007f"/>
+                                    </svg>
+                                </div>
+
+                                <div class="morph-badge" id="morphBadge">Optimal Broiler Growth</div>
+
+                                <div class="chicken-stats-overlay">
+                                    <div class="stat-tag">Relative Mass: <span id="relativeMassPercent">100%</span></div>
+                                    <div class="stat-tag">Physical Scale: <span id="physicalScaleTag">1.00x</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GRAPH ENGINE BOX -->
+                        <div class="graph-lab-box">
+                            <div class="box-header">
+                                <span>GROWTH TRAJECTORY SYNAPSE (DAYS 1-56)</span>
+                                <span class="live-dot green"></span>
+                            </div>
+
+                            <div class="chart-stage" id="labChartStage"></div>
+
+                            <div class="chart-legend-lab">
+                                <div class="leg-item"><span class="leg-line cur"></span> Predicted Curve</div>
+                                <div class="leg-item"><span class="leg-line ref"></span> Cobb 500 Baseline</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- MATRIX & COMPARISON SECTION -->
+                    <div class="lab-card table-card">
+                        <h3>Synaptic Nutrient Matrix</h3>
+                        <p class="phase-info" id="labPhaseInfo"></p>
+                        <div class="table-responsive matrix-scroll">
+                            <table class="lab-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nutrient Signal</th>
+                                        <th>Active Ration</th>
+                                        <th>Cobb 500 Baseline Target</th>
+                                        <th>Deviation</th>
+                                        <th>Synapse Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="labMatrixBody"></tbody>
+                            </table>
+                        </div>
+                    
+                        <!-- REAL-LIFE PRODUCTION FACTORS -->
+                        <div class="real-life-section">
+                            <h3>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                Commercial Environmental & Management Factors
+                            </h3>
+                            <p class="real-life-intro">
+                                Scaling PoultSynapse neural predictions to full-scale commercial housing requires integrating critical environmental variables:
+                            </p>
+
+                            <div class="real-life-grid">
+                                <div class="real-life-card">
+                                    <h4>1. Stocking Density (Birds/m²)</h4>
+                                    <p>Densities exceeding 18 birds/m² elevate ammonia levels and heat load, restricting genetic growth pathways unless ventilation is scaled proportionally.</p>
+                                </div>
+
+                                <div class="real-life-card">
+                                    <h4>2. Environmental Ventilation</h4>
+                                    <p>Air exchange rates (m³/h per kg live weight) control atmospheric moisture and CO₂, preventing ascites and wet litter syndromes.</p>
+                                </div>
+
+                                <div class="real-life-card">
+                                    <h4>3. Feeder & Drinker Space</h4>
+                                    <p>Sufficient feeder space (45–80 birds/pan) and drinkers (8–10 birds/nipple) guarantee uniform nutrient access across the entire flock node network.</p>
+                                </div>
+
+                                <div class="real-life-card">
+                                    <h4>4. Biosecurity & Litter Quality</h4>
+                                    <p>Maintaining litter moisture at 20–25% mitigates pododermatitis and pathogen loads, preserving feed conversion efficiency (FCR).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MOBILE LIVE CHIP -->
+    <a href="#labPredictedWeight" class="live-chip" id="liveChip" aria-label="Jump to results">
+        <span>Predicted <strong id="chipWeight">-</strong></span>
+        <span id="chipVariance">-</span>
+        <span class="chip-go">results &darr;</span>
+    </a>
+
+    <footer class="syn-footer">
+        <div class="lab-container">
+            <p class="scribble big">Engineered by NUTRIFY Neural Intelligence Systems.</p>
+            <p class="foot-note">PoultSynapse is a bio-neural research simulation engine. Standard reference data sourced from Cobb 500 Performance &amp; Nutrition Supplement (2022).</p>
+            <p><a href="../index.html">Nutrify Home</a> &middot; <a href="../index.html#papers">Documentation</a> &middot; <a href="../index.html#tips">Parameters</a></p>
+        </div>
+    </footer>
+
+    <script src="poultsynapse.js"></script>
+    <script>
+        /* Neural Canvas Background FX */
+        (function() {
+            const canvas = document.getElementById('synapseCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let nodes = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+
+            function initNodes() {
+                nodes = [];
+                const count = Math.floor((width * height) / 22000);
+                for(let i = 0; i < count; i++) {
+                    nodes.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.4,
+                        vy: (Math.random() - 0.5) * 0.4,
+                        radius: Math.random() * 2 + 1
+                    });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = 'rgba(0, 242, 254, 0.7)';
+                ctx.strokeStyle = 'rgba(0, 242, 254, 0.12)';
+
+                for(let i = 0; i < nodes.length; i++) {
+                    let n = nodes[i];
+                    n.x += n.vx;
+                    n.y += n.vy;
+
+                    if(n.x < 0 || n.x > width) n.vx *= -1;
+                    if(n.y < 0 || n.y > height) n.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    for(let j = i + 1; j < nodes.length; j++) {
+                        let n2 = nodes[j];
+                        let dist = Math.hypot(n.x - n2.x, n.y - n2.y);
+                        if(dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(n.x, n.y);
+                            ctx.lineTo(n2.x, n2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', () => { resize(); initNodes(); });
+            resize();
+            initNodes();
+            draw();
+        })();
+    </script>
+</body>
+</html>

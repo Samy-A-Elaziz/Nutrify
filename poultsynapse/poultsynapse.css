@@ -1,0 +1,714 @@
+/* ==========================================================================
+   POULTSYNAPSE DESIGN SYSTEM
+   Theme: a LIGHT, mad-scientist laboratory painted with Van Gogh swirls.
+   Parchment paper, ultramarine ink, sunflower yellow, cypress green.
+
+   FILE MAP
+     1. Design tokens (colours, fonts, sizes)  <- change the look HERE
+     2. Base + page background
+     3. Header (mobile-safe)
+     4. Dr. Synapse strip + handwriting notes
+     5. Panels, inputs, sliders, buttons
+     6. Metrics, chicken stage, chart
+     7. Table, real-life cards, footer
+     8. Responsive rules (tablet, phone) + accessibility
+   Class names stay the same as the JS expects; never rename an element id.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. DESIGN TOKENS
+   (the JS reads --chart-* and the state colours, so charts follow the theme)
+   ========================================================================== */
+:root {
+    /* paper + ink */
+    --lab-bg: #fbf4de;
+    --lab-panel-bg: #fffaf0;
+    --lab-card-bg: #fff6e0;
+    --ink: #2b2a4a;
+    --lab-border: #2b2a4a;
+
+    /* Van Gogh palette */
+    --ultramarine: #2a4a9a;
+    --night-blue: #1b2f6b;
+    --sky: #bcd6ee;
+    --sunflower: #f2b922;
+    --ochre: #d98a1c;
+    --cypress: #2f6b57;
+    --poppy: #d6452d;
+
+    /* names the JavaScript still uses */
+    --primary-teal: var(--ultramarine);   /* main accent colour */
+    --emerald-accent: #2f7d5a;            /* good / optimal */
+    --warning-amber: #b86e08;             /* surplus / high */
+    --danger-red: #c63d2f;                /* deficient */
+
+    --text-primary: #2b2a4a;
+    --text-secondary: #5a5878;
+    --text-muted: #7b7894;
+
+    /* chart colours (read by renderLabChart) */
+    --chart-grid: #e6d9b0;
+    --chart-text: #6b6446;
+    --chart-ref: #2a4a9a;
+    --chart-cur: #d9741a;
+
+    /* fonts */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-sans: 'Nunito', system-ui, sans-serif;
+    --font-hand: 'Caveat', 'Comic Sans MS', cursive;
+    --font-lab: 'Space Mono', ui-monospace, monospace;
+
+    /* shape: slightly uneven radii feel hand-painted */
+    --wobble: 18px 24px 16px 22px / 22px 16px 24px 18px;
+    --stroke: 2.5px;
+    --brush-shadow: 5px 6px 0 rgba(42, 74, 154, 0.22);
+
+    /* stage heights (phones override these further down) */
+    --stage-h: 400px;
+}
+
+
+/* ==========================================================================
+   2. BASE + PAGE BACKGROUND
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body.poultsynapse-theme {
+    background-color: var(--lab-bg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    line-height: 1.55;
+    overflow-x: hidden;               /* nothing may push the page sideways on phones */
+}
+
+/* Soft swirling sky behind everything (assets/swirls.svg) */
+body.poultsynapse-theme::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: url('assets/swirls.svg') center / cover no-repeat;
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.lab-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+a { color: var(--ultramarine); }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.2; }
+
+
+/* ==========================================================================
+   3. HEADER  (wraps cleanly on phones - this fixes the cut-off nav bar)
+   ========================================================================== */
+.lab-navbar {
+    background: rgba(255, 250, 240, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: var(--stroke) solid var(--ink);
+    padding: 0.8rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;                  /* children drop to a new line instead of overflowing */
+    gap: 0.6rem 1rem;
+}
+
+.lab-brand { min-width: 0; flex: 1 1 320px; }
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--ultramarine); }
+
+.lab-title-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.8rem;
+    margin-top: 0.2rem;
+}
+
+.pulse-indicator {
+    width: 12px; height: 12px;
+    background: var(--sunflower);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(242, 185, 34, 0.8); }
+    70%  { box-shadow: 0 0 0 10px rgba(242, 185, 34, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(242, 185, 34, 0); }
+}
+
+.lab-badge {
+    background: var(--sunflower);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 0.1rem 0.55rem;
+    font-family: var(--font-lab);
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 6px;
+    transform: rotate(-2deg);
+}
+
+.lab-logo-text {
+    font-size: clamp(1.35rem, 5vw, 1.9rem);
+    font-weight: 800;
+    font-style: italic;
+    color: var(--ink);
+    min-width: 0;
+}
+.accent-text { color: var(--ultramarine); }
+.sub-text {
+    font-family: var(--font-hand);
+    font-style: normal;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.lab-nav-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+    min-width: 0;
+}
+
+.model-status {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--cypress);
+    background: rgba(47, 107, 87, 0.1);
+    border: 2px solid var(--cypress);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 100%;
+}
+.model-status .dot {
+    flex: none;
+    width: 8px; height: 8px;
+    background: var(--cypress);
+    border-radius: 50%;
+}
+
+
+/* ==========================================================================
+   4. DR. SYNAPSE STRIP + HANDWRITING NOTES
+   ========================================================================== */
+.doctor-strip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.4rem;
+}
+.mascot { flex: none; width: 96px; animation: wiggle 4s ease-in-out infinite; }
+.mascot-svg { width: 100%; height: auto; display: block; }
+@keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+.speech-bubble {
+    position: relative;
+    background: #fff;
+    border: var(--stroke) solid var(--ink);
+    border-radius: var(--wobble);
+    padding: 0.8rem 1.1rem;
+    box-shadow: var(--brush-shadow);
+    min-width: 0;
+}
+/* little tail pointing at the mascot */
+.speech-bubble::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 28px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-left: var(--stroke) solid var(--ink);
+    border-bottom: var(--stroke) solid var(--ink);
+    transform: rotate(45deg);
+}
+.speech-bubble p { font-family: var(--font-hand); font-size: 1.45rem; line-height: 1.2; color: var(--ink); }
+.scribble-label { font-family: var(--font-lab); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+
+/* Handwritten margin notes. Use anywhere: <span class="scribble">text</span> */
+.scribble {
+    display: block;
+    font-family: var(--font-hand);
+    font-size: 1.15rem;
+    line-height: 1.1;
+    color: var(--poppy);
+    transform: rotate(-1.5deg);
+    margin: 0.1rem 0 0.4rem;
+}
+.scribble.big { font-size: 1.6rem; text-align: center; }
+
+
+/* ==========================================================================
+   5. PANELS, INPUTS, SLIDERS, BUTTONS
+   ========================================================================== */
+.lab-main { padding: 1.5rem 0 2rem; }
+
+.lab-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+    gap: 1.6rem;
+    align-items: start;
+}
+
+/* every white "canvas" in the lab */
+.lab-panel, .lab-card {
+    background: var(--lab-panel-bg);
+    border: var(--stroke) solid var(--ink);
+    border-radius: var(--wobble);
+    box-shadow: var(--brush-shadow);
+    padding: 1.4rem;
+    min-width: 0;                      /* lets grid children shrink instead of overflowing */
+}
+.display-panel { display: flex; flex-direction: column; gap: 1.4rem; background: transparent; border: 0; box-shadow: none; padding: 0; }
+.display-panel > * { min-width: 0; }
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.9rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px dashed var(--ochre);
+}
+.panel-header h2 {
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--night-blue);
+}
+.panel-tag {
+    font-family: var(--font-lab);
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: var(--night-blue);
+    color: var(--sunflower);
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+
+.param-section-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--night-blue);
+    margin: 1.2rem 0 0.6rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid var(--sunflower);
+}
+
+.param-group { margin-bottom: 1.1rem; }
+.param-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+.val-display {
+    flex: none;
+    font-family: var(--font-lab);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ultramarine);
+    background: rgba(242, 185, 34, 0.25);
+    padding: 0.05rem 0.45rem;
+    border-radius: 5px;
+}
+
+/* Slider = a painted brush stroke with a little sun as the handle */
+.lab-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    background: linear-gradient(90deg, var(--sky), var(--ultramarine));
+    outline: none;
+    cursor: pointer;
+}
+.lab-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffe27a 0 35%, var(--sunflower) 36%);
+    border: 3px solid var(--ink);
+    box-shadow: 0 0 0 4px rgba(242, 185, 34, 0.3);
+    transition: transform 0.15s;
+}
+.lab-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.lab-slider::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--sunflower);
+    border: 3px solid var(--ink);
+}
+
+.lab-select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    font: 700 0.9rem var(--font-sans);
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    outline: none;
+}
+.lab-select:focus { border-color: var(--ultramarine); box-shadow: 0 0 0 3px rgba(42, 74, 154, 0.25); }
+
+/* collapsible nutrient groups built by poultsynapse.js */
+.param-details {
+    margin: 0.6rem 0;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0 0.9rem;
+}
+.param-details[open] { padding-bottom: 0.4rem; background: var(--lab-card-bg); }
+.param-details > summary.param-section-title {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0.7rem 0;
+    border-bottom: 0;
+}
+.param-details > summary.param-section-title::-webkit-details-marker { display: none; }
+.param-details > summary.param-section-title::after { content: '+'; font-style: normal; }
+.param-details[open] > summary.param-section-title::after { content: '\2212'; }
+
+.lab-btn-group { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.4rem; }
+.lab-btn {
+    flex: 1 1 140px;
+    padding: 0.75rem 1rem;
+    font: 800 0.88rem var(--font-sans);
+    color: var(--ink);
+    border: 2.5px solid var(--ink);
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 3px 4px 0 var(--ink);
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.lab-btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 5px 0 var(--ink); }
+.lab-btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+.lab-btn-sec { background: #fff; }
+.lab-btn-accent { background: var(--sunflower); }
+
+
+/* ==========================================================================
+   6. METRICS, CHICKEN STAGE, CHART
+   ========================================================================== */
+.metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+
+.metric-box {
+    background: var(--lab-panel-bg);
+    border: var(--stroke) solid var(--ink);
+    border-radius: var(--wobble);
+    padding: 1rem;
+    box-shadow: var(--brush-shadow);
+    min-width: 0;
+}
+.metric-box:nth-child(odd)  { transform: rotate(-0.6deg); }
+.metric-box:nth-child(even) { transform: rotate(0.5deg); }
+.metric-box.highlight-box { background: #fff3c4; }
+
+.metric-tag { font-family: var(--font-lab); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); }
+.metric-num {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3.4vw, 2rem);
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0.2rem 0;
+    overflow-wrap: anywhere;
+}
+.metric-num .unit { font-size: 0.95rem; color: var(--ultramarine); }
+.metric-num.variance-up   { color: var(--emerald-accent); }   /* set by poultsynapse.js */
+.metric-num.variance-down { color: var(--danger-red); }
+.metric-sub { font-size: 0.78rem; color: var(--text-secondary); }
+
+.lab-stage-container { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 1.4rem; }
+
+.chicken-lab-box, .graph-lab-box {
+    display: flex;
+    flex-direction: column;
+    background: var(--lab-panel-bg);
+    border: var(--stroke) solid var(--ink);
+    border-radius: var(--wobble);
+    box-shadow: var(--brush-shadow);
+    padding: 1rem;
+    min-width: 0;
+}
+.box-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-family: var(--font-lab);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--night-blue);
+    margin-bottom: 0.8rem;
+}
+.live-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background: var(--poppy);
+    animation: pulse 2s infinite;
+}
+.live-dot.green { background: var(--cypress); margin-right: 0; }
+
+/* The chicken sits in a pale painted night sky with a sunflower moon */
+.chicken-viewport {
+    position: relative;
+    height: var(--stage-h);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 82% 18%, #fff0a0 0 9%, rgba(255, 240, 160, 0.35) 10% 16%, transparent 17%),
+        url('assets/swirls.svg') center / 220% no-repeat,
+        linear-gradient(180deg, var(--sky), #eef5fb);
+}
+.chicken-avatar-wrapper {
+    width: 240px; height: 240px;
+    position: relative;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chicken-svg { width: 100%; height: 100%; }
+
+.morph-badge {
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100% - 24px);
+    text-align: center;
+    font-family: var(--font-lab);
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.25rem 0.8rem;
+    background: #fff;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+}
+.morph-badge.state-optimal   { color: var(--emerald-accent); }
+.morph-badge.state-deficient { color: var(--danger-red); }
+.morph-badge.state-high      { color: var(--warning-amber); }
+
+.chicken-stats-overlay { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 0.3rem; }
+.stat-tag {
+    font-family: var(--font-lab);
+    font-size: 0.68rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    padding: 0.1rem 0.45rem;
+}
+.stat-tag span { color: var(--ultramarine); font-weight: 700; }
+
+.chart-stage {
+    height: var(--stage-h);
+    overflow: hidden;
+    background: #fffdf5;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+}
+.chart-legend-lab { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin-top: 0.8rem; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); }
+.leg-item { display: flex; align-items: center; gap: 0.5rem; }
+.leg-line { width: 22px; height: 4px; border-radius: 2px; }
+.leg-line.cur { background: var(--chart-cur); }
+.leg-line.ref { background: repeating-linear-gradient(90deg, var(--chart-ref) 0 6px, transparent 6px 10px); }
+
+
+/* ==========================================================================
+   7. TABLE, REAL-LIFE CARDS, FOOTER
+   ========================================================================== */
+.lab-card h3 { font-size: 1.25rem; color: var(--night-blue); margin-bottom: 0.5rem; }
+
+.phase-info {
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    background: #fff3c4;
+    border-left: 5px solid var(--sunflower);
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 1rem;
+}
+.phase-info strong { color: var(--night-blue); font-family: var(--font-lab); }
+
+.table-responsive, .matrix-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    max-height: 520px;                 /* long table scrolls inside its own box */
+    overflow-y: auto;
+}
+.lab-table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.85rem; background: #fff; }
+.lab-table th, .lab-table td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid #eadfba; }
+.matrix-scroll .lab-table th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--night-blue);
+    color: #fff3c4;
+    font-family: var(--font-lab);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.matrix-group-row td {
+    background: #fff3c4;
+    color: var(--night-blue);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    border-bottom: 2px solid var(--sunflower);
+}
+.cell-value { color: var(--ultramarine); font-family: var(--font-lab); font-weight: 700; }
+.cell-muted { color: var(--text-secondary); }
+.cell-mono  { font-family: var(--font-lab); }
+
+.status-badge { display: inline-block; font-family: var(--font-lab); font-size: 0.66rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1.5px solid currentColor; }
+.status-badge.optimal   { background: rgba(47, 125, 90, 0.12);  color: var(--emerald-accent); }
+.status-badge.deficient { background: rgba(198, 61, 47, 0.12);  color: var(--danger-red); }
+.status-badge.surplus   { background: rgba(184, 110, 8, 0.14);  color: var(--warning-amber); }
+
+.real-life-section { margin-top: 2rem; padding-top: 1.4rem; border-top: 2px dashed var(--ochre); }
+.real-life-section h3 { display: flex; align-items: center; gap: 0.5rem; }
+.real-life-intro { color: var(--text-secondary); font-size: 0.9rem; }
+.real-life-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.1rem; }
+.real-life-card {
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-left: 8px solid var(--cypress);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+}
+.real-life-card:nth-child(2) { border-left-color: var(--ultramarine); }
+.real-life-card:nth-child(3) { border-left-color: var(--sunflower); }
+.real-life-card:nth-child(4) { border-left-color: var(--poppy); }
+.real-life-card h4 { font-size: 0.98rem; color: var(--night-blue); margin-bottom: 0.35rem; }
+.real-life-card p { font-size: 0.84rem; color: var(--text-secondary); }
+
+.syn-footer { text-align: center; padding: 2rem 0 2.5rem; border-top: var(--stroke) solid var(--ink); background: rgba(255, 250, 240, 0.9); }
+.syn-footer p { margin: 0.4rem 0; }
+.foot-note { font-size: 0.8rem; color: var(--text-secondary); max-width: 640px; margin: 0.4rem auto; }
+
+
+/* ==========================================================================
+   8. RESPONSIVE RULES + ACCESSIBILITY
+   ========================================================================== */
+
+/* Tablets and small laptops: stack panels, keep the chicken and chart side by side */
+@media (max-width: 1024px) {
+    .lab-grid { grid-template-columns: minmax(0, 1fr); }
+    .metrics-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Large phones / small tablets */
+@media (max-width: 760px) {
+    .lab-stage-container { grid-template-columns: minmax(0, 1fr); }
+    :root { --stage-h: 320px; }
+    .lab-container { padding: 0 1rem; }
+}
+
+/* Phones */
+@media (max-width: 560px) {
+    :root { --stage-h: 290px; }
+    .lab-navbar { padding: 0.6rem 0; position: static; }  /* sticky header eats too much screen on phones */
+    .sub-text { display: none; }                          /* long tagline hidden on tiny screens */
+    .lab-nav-actions { width: 100%; justify-content: space-between; }
+    .model-status { font-size: 0.74rem; padding: 0.3rem 0.65rem; }
+    .doctor-strip { gap: 0.6rem; margin-top: 1rem; }
+    .mascot { width: 64px; }
+    .speech-bubble { padding: 0.6rem 0.8rem; }
+    .speech-bubble p { font-size: 1.2rem; }
+    .lab-panel, .lab-card { padding: 1rem; }
+    .metrics-row { gap: 0.7rem; }
+    .metric-box { padding: 0.75rem; }
+    .chicken-avatar-wrapper { width: 160px; height: 160px; }   /* max scale 1.5 = 240px still fits */
+    .lab-btn { flex-basis: 100%; }
+    .lab-slider::-webkit-slider-thumb { width: 30px; height: 30px; }   /* bigger touch target */
+}
+
+@media (max-width: 360px) {
+    .metrics-row { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Live result bar: only on tablets and phones, where results sit far below the sliders */
+.live-chip { display: none; }
+@media (max-width: 1024px) {
+    .live-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        position: fixed;
+        left: 0.7rem; right: 0.7rem;
+        bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
+        z-index: 90;
+        padding: 0.6rem 1rem;
+        background: #fff3c4;
+        border: var(--stroke) solid var(--ink);
+        border-radius: 14px;
+        box-shadow: 3px 4px 0 var(--ink);
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+    .live-chip strong { font-family: var(--font-lab); color: var(--ultramarine); }
+    .live-chip .variance-up { color: var(--emerald-accent); }
+    .live-chip .variance-down { color: var(--danger-red); }
+    .chip-go { color: var(--text-secondary); font-family: var(--font-hand); font-size: 1.05rem; }
+    .syn-footer { padding-bottom: 5rem; }      /* keep the footer clear of the bar */
+}
+
+/* Keyboard users get a clear painted focus ring */
+:focus-visible { outline: 3px solid var(--sunflower); outline-offset: 2px; }
+
+/* Respect "reduce motion" settings */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .metric-box { transform: none !important; }
+}
